@@ -1,0 +1,30 @@
+{
+  "name": "@xentropy/core",
+  "version": "0.1.0",
+  "description": "Contract-driven component simulation and portable workflow execution with Codex",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {"type": "git", "url": "git+https://github.com/shekkizh/xentropy-core.git"},
+  "homepage": "https://github.com/shekkizh/xentropy-core#readme",
+  "bugs": {"url": "https://github.com/shekkizh/xentropy-core/issues"},
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"},
+    "./sandbox": {"types": "./dist/sandbox.d.ts", "import": "./dist/sandbox.js"},
+    "./package.json": "./package.json"
+  },
+  "bin": {"xentropy": "./bin/xentropy.mjs"},
+  "files": ["dist", "bin", "examples/document-pipeline.json", "LICENSE", "NOTICE", "README.md"],
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit && node --check bin/xentropy.mjs && node --check scripts/build.mjs",
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:package": "npm run build && node scripts/test-package.mjs",
+    "prepare": "npm run build",
+    "prepack": "npm run build"
+  },
+  "dependencies": {"@openai/codex": "0.160.0", "@openai/codex-sdk": "0.160.0", "ajv": "8.20.0"},
+  "devDependencies": {"@types/node": "26.6.4", "tsx": "4.23.15", "typescript": "7.0.2"}
+}

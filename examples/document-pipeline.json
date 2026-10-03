@@ -1,0 +1,506 @@
+{
+  "format": "xentropy-workspace",
+  "version": 1,
+  "components": [
+    {
+      "definition": {
+        "id": "aws-s3",
+        "version": "1.0.0",
+        "description": "Model storing a small text object behind a JSON adapter.",
+        "context": [
+          "spec.md"
+        ],
+        "operation": {
+          "name": "aws_s3",
+          "path": "/aws/s3",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bucket": {
+                "type": "string",
+                "minLength": 1
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "bucket",
+              "key",
+              "content"
+            ]
+          },
+          "responses": {
+            "200": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "bucket": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "objectUri": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "accepted": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "bucket",
+                "key",
+                "objectUri",
+                "accepted"
+              ]
+            },
+            "403": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            },
+            "503": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            }
+          }
+        },
+        "scenarios": {
+          "unavailable": {
+            "description": "S3 is unavailable; return the documented 503."
+          },
+          "access-denied": {
+            "description": "The caller lacks object-write permission; return the documented 403."
+          }
+        }
+      },
+      "documents": {
+        "spec.md": "# Amazon S3 · Put object\n\nThis is a deliberately narrow JSON adapter contract for workflow tests. It is not the native provider protocol or a full service emulator. A simulation creates no resources and persists no state. A real endpoint must implement this exact JSON POST contract and perform provider authentication on its server. Never put credentials in these context files.\n\nNormal: echo bucket and key; objectUri is s3:// plus bucket plus / plus key; accepted is true. The supplied content is the whole object. Do not calculate or fabricate an AWS ETag or claim that a simulated object can be fetched later. A real adapter must call S3 PutObject and return this normalized receipt only after success. Set safeToFallback=false for real writes.\n\nFor unavailable scenarios return 503 {\"error\":\"service_unavailable\"}. For access-denied scenarios return 403 {\"error\":\"access_denied\"}. Otherwise use only the documented normal behavior.\n\nReference: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html\n"
+      }
+    },
+    {
+      "definition": {
+        "id": "aws-eventbridge",
+        "version": "1.0.0",
+        "description": "Model accepting one event behind a JSON adapter.",
+        "context": [
+          "spec.md"
+        ],
+        "operation": {
+          "name": "aws_eventbridge",
+          "path": "/aws/eventbridge",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bus": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1
+              },
+              "objectUri": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "bus",
+              "source",
+              "objectUri"
+            ]
+          },
+          "responses": {
+            "200": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "event": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "objectUri": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "objectUri"
+                  ]
+                },
+                "accepted": {
+                  "type": "boolean"
+                },
+                "failedEntryCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "event",
+                "accepted",
+                "failedEntryCount"
+              ]
+            },
+            "403": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            },
+            "503": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            }
+          }
+        },
+        "scenarios": {
+          "unavailable": {
+            "description": "The dependency is unavailable for this request. Return status 503 with error service_unavailable."
+          }
+        }
+      },
+      "documents": {
+        "spec.md": "# Amazon EventBridge · Publish event\n\nThis is a deliberately narrow JSON adapter contract for workflow tests. It is not the native provider protocol or a full service emulator. A simulation creates no resources and persists no state. A real endpoint must implement this exact JSON POST contract and perform provider authentication on its server. Never put credentials in these context files.\n\nNormal: accepted true, failedEntryCount 0, event contains the provided source and objectUri. This receipt says the adapter accepted publication, not that a target ran. The real adapter calls PutEvents with one entry and checks its per-entry error and FailedEntryCount; provider HTTP 200 alone is insufficient. Normalize an entry failure to status503 service_unavailable. No routing or delivery is performed in simulation. safeToFallback=false for real publication.\n\nFor unavailable scenarios return 503 {\"error\":\"service_unavailable\"}. For access-denied scenarios return 403 {\"error\":\"access_denied\"}. Otherwise use only the documented normal behavior.\n\nReference: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html\n"
+      }
+    },
+    {
+      "definition": {
+        "id": "aws-lambda",
+        "version": "1.0.0",
+        "description": "Model a synchronous document-processing Lambda behind a JSON adapter.",
+        "context": [
+          "spec.md"
+        ],
+        "operation": {
+          "name": "aws_lambda",
+          "path": "/aws/lambda",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "functionName": {
+                "type": "string",
+                "minLength": 1
+              },
+              "event": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "objectUri": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "source",
+                  "objectUri"
+                ]
+              }
+            },
+            "required": [
+              "functionName",
+              "event"
+            ]
+          },
+          "responses": {
+            "200": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "objectUri": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "processed": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "objectUri",
+                "processed",
+                "message"
+              ]
+            },
+            "403": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            },
+            "503": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            }
+          }
+        },
+        "scenarios": {
+          "unavailable": {
+            "description": "Lambda invocation is unavailable; return the documented 503."
+          },
+          "function-error": {
+            "description": "The function failed; normalize the failure to503 service_unavailable."
+          }
+        }
+      },
+      "documents": {
+        "spec.md": "# AWS Lambda · Invoke processor\n\nThis is a deliberately narrow JSON adapter contract for workflow tests. It is not the native provider protocol or a full service emulator. A simulation creates no resources and persists no state. A real endpoint must implement this exact JSON POST contract and perform provider authentication on its server. Never put credentials in these context files.\n\nThe function contract for this starter: for any nonempty functionName and valid event, normal processing echoes event.objectUri, returns processed true and message exactly \"Processed \" followed by event.objectUri. No object contents are loaded and no durable processing happens in simulation. A real adapter invokes the configured Lambda synchronously, parses its function payload, and treats FunctionError as failure even if AWS transport status is200. Normalize execution failure to503. Restrict allowed function names server-side; safeToFallback=false for side effects.\n\nFor unavailable scenarios return 503 {\"error\":\"service_unavailable\"}. For access-denied scenarios return 403 {\"error\":\"access_denied\"}. Otherwise use only the documented normal behavior.\n\nReference: https://docs.aws.amazon.com/lambda/latest/api/API_Invoke.html\n"
+      }
+    },
+    {
+      "definition": {
+        "id": "aws-sqs",
+        "version": "1.0.0",
+        "description": "Model publishing a message to a queue behind a JSON adapter.",
+        "context": [
+          "spec.md"
+        ],
+        "operation": {
+          "name": "aws_sqs",
+          "path": "/aws/sqs",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "queue": {
+                "type": "string",
+                "minLength": 1
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "queue",
+              "message"
+            ]
+          },
+          "responses": {
+            "200": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "queue": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "message": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "accepted": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "queue",
+                "message",
+                "accepted"
+              ]
+            },
+            "403": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            },
+            "503": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "error"
+              ]
+            }
+          }
+        },
+        "scenarios": {
+          "unavailable": {
+            "description": "The dependency is unavailable for this request. Return status 503 with error service_unavailable."
+          }
+        }
+      },
+      "documents": {
+        "spec.md": "# Amazon SQS · Send message\n\nThis is a deliberately narrow JSON adapter contract for workflow tests. It is not the native provider protocol or a full service emulator. A simulation creates no resources and persists no state. A real endpoint must implement this exact JSON POST contract and perform provider authentication on its server. Never put credentials in these context files.\n\nNormal: echo queue and message; accepted true. Queue is a logical name resolved by the real adapter. This contract does not model delivery, visibility timeouts, FIFO deduplication, receive, or delete. Do not fabricate an AWS MessageId or checksum. A real adapter calls SendMessage and normalizes a successful receipt; failures use declared error responses. No message persists in simulation. safeToFallback=false for real publication.\n\nFor unavailable scenarios return 503 {\"error\":\"service_unavailable\"}. For access-denied scenarios return 403 {\"error\":\"access_denied\"}. Otherwise use only the documented normal behavior.\n\nReference: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html\n"
+      }
+    }
+  ],
+  "workflow": {
+    "name": "Document pipeline · S3 → EventBridge → Lambda → SQS",
+    "steps": [
+      {
+        "id": "upload",
+        "component": "aws-s3",
+        "mode": "simulate",
+        "input": {
+          "bucket": "demo-documents",
+          "key": "reports/q3.txt",
+          "content": "Quarterly report"
+        },
+        "bindings": {},
+        "expect": {
+          "status": 200,
+          "source": "codex",
+          "body": {
+            "accepted": true,
+            "objectUri": "s3://demo-documents/reports/q3.txt"
+          }
+        }
+      },
+      {
+        "id": "publish",
+        "component": "aws-eventbridge",
+        "mode": "simulate",
+        "input": {
+          "bus": "documents",
+          "source": "documents.uploaded"
+        },
+        "bindings": {
+          "objectUri": {
+            "step": "upload",
+            "field": "objectUri"
+          }
+        },
+        "expect": {
+          "status": 200,
+          "source": "codex",
+          "body": {
+            "accepted": true,
+            "failedEntryCount": 0
+          }
+        }
+      },
+      {
+        "id": "process",
+        "component": "aws-lambda",
+        "mode": "simulate",
+        "input": {
+          "functionName": "process-document"
+        },
+        "bindings": {
+          "event": {
+            "step": "publish",
+            "field": "event"
+          }
+        },
+        "expect": {
+          "status": 200,
+          "source": "codex",
+          "body": {
+            "processed": true,
+            "message": "Processed s3://demo-documents/reports/q3.txt"
+          }
+        }
+      },
+      {
+        "id": "enqueue",
+        "component": "aws-sqs",
+        "mode": "simulate",
+        "input": {
+          "queue": "processed-documents"
+        },
+        "bindings": {
+          "message": {
+            "step": "process",
+            "field": "message"
+          }
+        },
+        "expect": {
+          "status": 200,
+          "source": "codex",
+          "body": {
+            "accepted": true,
+            "message": "Processed s3://demo-documents/reports/q3.txt"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "id": "inventory",
+  "version": "1.0.0",
+  "description": "Check whether a requested quantity is available; does not reserve stock.",
+  "context": [
+    "spec.md",
+    "stock.json"
+  ],
+  "operation": {
+    "name": "check_inventory",
+    "path": "/inventory/check",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sku",
+        "quantity"
+      ],
+      "properties": {
+        "sku": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sku",
+          "available",
+          "fulfillable"
+        ],
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "available": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fulfillable": {
+            "type": "boolean"
+          }
+        }
+      },
+      "404": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "503": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "scenarios": {
+    "unavailable": {
+      "description": "The inventory database is unreachable for this invocation. Apply the documented unavailable-service behavior."
+    }
+  }
+}
