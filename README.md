@@ -36,10 +36,10 @@ If you install with scripts disabled, run `npm run build` before using the CLI.
 
 ## Use an exported workflow in another project
 
-Install the tagged GitHub source release; no private-repository access is needed:
+Install the compiled GitHub release; no private-repository access is needed:
 
 ```sh
-npm install git+https://github.com/shekkizh/xentropy-core.git#v0.1.0
+npm install https://github.com/shekkizh/xentropy-core/releases/download/v0.1.0/xentropy-core-0.1.0.tgz --allow-remote=root
 npx xentropy validate ./xentropy-workspace.json
 npx codex login
 npx xentropy run ./xentropy-workspace.json \
@@ -52,9 +52,15 @@ bindings, scenarios, and expected responses. The CLI loads it directly; no
 Xentropy server, browser, or agent registration is required. Each user supplies
 their own Codex authentication. Credentials are not part of an exported workspace.
 
-The GitHub release also provides an npm-installable `.tgz` built from this source.
-The package is not yet published to the npm registry; use the Git URL or release
-tarball rather than `npm install @xentropy/core`.
+The `--allow-remote=root` option permits this direct URL dependency with npm 12,
+which blocks URL installs by default. Older npm versions can omit the option.
+The tarball includes compiled modules and needs no build step.
+
+With npm 10/11, the tagged source can also be installed with
+`npm install git+https://github.com/shekkizh/xentropy-core.git#v0.1.0`.
+For source development on npm 12, use the clone-and-build instructions above.
+The package is not yet published to the npm registry; use the release tarball
+rather than `npm install @xentropy/core`.
 
 ## Command-line interface
 
