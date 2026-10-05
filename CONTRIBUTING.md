@@ -1,5 +1,20 @@
 # Contributing
 
+Fork this repository and open a pull request from a topic branch. Public access
+does not grant permission to push or merge; repository write access is limited
+to the maintainer. Do not push changes directly to `main`.
+
+The default branch requires a pull request, passing package and consumer
+validation on Node.js 22 and 24 on Linux and macOS, an up-to-date branch, and
+resolved review conversations. Force pushes and deletion of the default branch
+are blocked. The maintainer reviews and merges outside contributions. No second
+approval is required while the repository has one maintainer.
+
+Workflows for all outside contributors need maintainer approval before running.
+CI has read-only repository permissions and does not require model credentials.
+Keep third-party Actions pinned to full commit SHAs. New Actions require an
+explicit update to the repository's Actions allowlist.
+
 Use Node.js 22+ and run `npm ci`, `npm run check`, `npm test`, and
 `npm run test:package` before opening a pull request. The tests do not require
 model credentials. Add focused tests for changes to contracts, modes, bindings,
