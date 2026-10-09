@@ -1,5 +1,16 @@
 # Xentropy core
 
+> **Deprecated — retained as a legacy archive.** Active xEntropy development is
+> maintained in [xentropy-tech](https://github.com/shekkizh/xentropy-tech).
+> The current product uses its own browser/local graph runner and hosted Eve
+> simulation; it no longer depends on `@xentropy/core`.
+
+This repository preserves the historical v0.1.0 Codex runtime, CLI, source, and
+releases for existing users and reproducibility. It is no longer maintained and
+will receive no new features or fixes. The documentation below describes that
+legacy package, not the current xEntropy product. Its workspace format and CLI
+are not a supported interface to the current product.
+
 Turn a component's JSON contract and selected context into a callable simulation,
 then test a workflow before its real dependencies exist. This package contains
 the component loader, Codex simulator, execution modes, workflow engine, and a
