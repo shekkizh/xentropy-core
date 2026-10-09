@@ -1,5 +1,10 @@
 # Contributing
 
+This repository is deprecated and retained as a legacy archive. It no longer
+accepts contributions. Active product development belongs in
+[xentropy-tech](https://github.com/shekkizh/xentropy-tech); access to that
+repository is controlled separately. The guidance below is historical.
+
 Fork this repository and open a pull request from a topic branch. Public access
 does not grant permission to push or merge; repository write access is limited
 to the maintainer. Do not push changes directly to `main`.
